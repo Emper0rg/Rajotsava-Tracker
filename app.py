@@ -10,7 +10,13 @@ import config as C
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me")
-uri = os.environ.get("DATABASE_URL", "sqlite:///rajyotsava.db")
+uri = os.environ.get("DATABASE_URL")
+if not uri:
+    # In local dev, we use sqlite. In production, we MUST have a DATABASE_URL.
+    if os.environ.get("RENDER") == "true":
+        raise RuntimeError("DATABASE_URL environment variable is missing! The app cannot save data on Render.")
+    uri = "sqlite:///rajyotsava.db"
+
 if uri.startswith("postgres://"):
     uri = uri.replace("postgres://", "postgresql://", 1)
 app.config["SQLALCHEMY_DATABASE_URI"] = uri
