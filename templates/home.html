@@ -1,12 +1,21 @@
 {% extends "base.html" %}{% block body %}
 <section class="note"><h2>Be Part of the Grand Celebration!</h2>
 <p>We're organizing a spectacular event in the auditorium, featuring a variety of cultural performances and a festive lunch. To make this happen, we're raising funds for {{ cfg.PURPOSE }}. While ₹{{ cfg.SUGGESTED }} is suggested, any contribution is a gesture of your love for our language and culture.</p></section>
+
 <section class="box"><div class="row"><b>Contribution Progress</b><b>{{ s.pct }}%</b></div><div class="bar"><i style="width:{{ s.pct }}%"></i></div></section>
+
 <section class="stats">
 	<div class="box"><span>Total Collected</span><strong>₹{{ s.total }}</strong></div>
 	<div class="box"><span>Active Contributors</span><strong>{{ s.contributors }} / {{ s.students }}</strong></div>
 	<div class="box"><span>UPI vs Cash</span><strong>₹{{ s.upi }} / ₹{{ s.cash }}</strong></div></section>
-<section class="pay">
+
+<div class="row" style="justify-content: center; margin: 20px 0;">
+    <form action="{{ url_for('contribute_flow') }}" method="get">
+        <button class="btn" style="width: auto; padding: 15px 40px; font-size: 1.2rem;">Contribute Now 🚀</button>
+    </form>
+</div>
+
+<section class="pay" style="display:none;" id="payment-section">
 	<div class="box"><h3>1. Complete Payment</h3>
 	<div class="qr-container">
 		<img class="qr" src="{{ url_for('qr') }}" alt="UPI QR code">
@@ -18,14 +27,15 @@
 	</div>
 	<p class="upi">UPI ID: <b>{{ cfg.UPI_ID }}</b></p>
 	<p class="small">Please verify the recipient name in your app. Keep your UTR number ready.</p></div>
-	<form class="box" method="post" action="{{ url_for('claim') }}"><h3>2. Register Contribution</h3>
-	<input type="hidden" name="csrf" value="{{ csrf }}">
-	<label>Select your name<select name="student_id" required><option value="">Choose from list…</option>
-	{% for st in students %}<option value="{{ st.id }}">{{ st.name }} ({{ st.section }})</option>{% endfor %}</select></label>
-	<label>Amount paid (₹)<span class="chips">{% for a in cfg.AMOUNTS %}<button type="button" class="chip {{ 'on' if a==cfg.SUGGESTED }}" data-amt="{{ a }}">₹{{ a }}</button>{% endfor %}</span>
-	<input type="number" name="amount" id="amount" value="{{ cfg.SUGGESTED }}" min="1" required></label>
-	<label>Transaction ID / UTR<input name="utr" inputmode="numeric" maxlength="12" pattern="\d{12}" placeholder="12-digit reference number" required></label>
-	<button class="btn">Verify my payment</button></form>
+	<form class="box" method="post" action="{{ url_for('claim') }}">
+        <input type="hidden" name="csrf" value="{{ csrf }}">
+        <h3>2. Register Contribution</h3>
+        <label>Select your name<select name="student_id" required><option value="">Choose from list…</option>
+        {% for st in students %}<option value="{{ st.id }}">{{ st.name }} ({{ st.year }} yr {{ st.section }})</option>{% endfor %}</select></label>
+        <label>Amount paid (₹)<span class="chips">{% for a in cfg.AMOUNTS %}<button type="button" class="chip {{ 'on' if a==cfg.SUGGESTED }}" data-amt="{{ a }}">₹{{ a }}</button>{% endfor %}</span>
+        <input type="number" name="amount" id="amount" value="{{ cfg.SUGGESTED }}" min="1" required></label>
+        <label>Transaction ID / UTR<input name="utr" inputmode="numeric" maxlength="12" pattern="\d{12}" placeholder="12-digit reference number" required></label>
+        <button class="btn">Verify my payment</button></form>
 </section>
 
 <section class="box">
@@ -34,7 +44,7 @@
 	<form method="post" action="{{ url_for('cultural') }}">
 		<input type="hidden" name="csrf" value="{{ csrf }}">
 		<label>Select your name<select name="student_id" required><option value="">Choose from list…</option>
-		{% for st in students %}<option value="{{ st.id }}">{{ st.name }} ({{ st.section }})</option>{% endfor %}</select></label>
+		{% for st in students %}<option value="{{ st.id }}">{{ st.name }} ({{ st.year }} yr {{ st.section }})</option>{% endfor %}</select></label>
 		<label>What would you like to perform?<input name="interest" placeholder="e.g. Classical Dance, Singing, Skit" required></label>
 		<button class="btn" style="background: var(--bright-yellow); color: var(--jet-black);">Submit Interest</button>
 	</form>

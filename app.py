@@ -25,7 +25,10 @@ db = SQLAlchemy(app)
 
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), nullable=False)
+    usn = db.Column(db.String(20), unique=True, nullable=False)
+    roll_no = db.Column(db.Integer)
+    year = db.Column(db.Integer, nullable=False) # 1, 2, or 3
     section = db.Column(db.String(1), default="A")
     cultural_interest = db.Column(db.String(255))
     payments = db.relationship("Payment", backref="student")
