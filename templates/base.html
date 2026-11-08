@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ cfg.EVENT_NAME }} | {{ cfg.CLASS_NAME }}</title>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;700&family=Noto+Sans+Kannada:wght@500;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head><body>
+<header>
+    <div class="flag-strip">
+        <div class="yellow"></div>
+        <div class="red"></div>
+    </div>
+    <img src="{{ url_for('static', filename='images/bu_logo.png') }}" alt="Bangalore University Logo" class="university-logo">
+    <p class="kn">ಕನ್ನಡ ರಾಜ್ಯೋತ್ಸವ</p>
+    <h1>{{ cfg.EVENT_NAME }}</h1>
+    <p>Honouring our heritage, celebrating our unity · Contribution portal</p>
+    <p class="meta">{{ cfg.COLLEGE }} · {{ cfg.CLASS_NAME }} · {{ cfg.EVENT_DATE }}</p>
+</header>
+<nav>{% set e = request.endpoint %}
+<a href="{{ url_for('home') }}" class="{{ 'on' if e=='home' }}">Home &amp; Pay</a>
+<a href="{{ url_for('directory') }}" class="{{ 'on' if e=='directory' }}">Students Directory</a>
+<a href="{{ url_for('admin') }}" class="{{ 'on' if e=='admin' }}">CR Admin</a></nav>
+<main>{% for c, m in get_flashed_messages(with_categories=true) %}<p class="flash {{ c }}">{{ m }}</p>{% endfor %}
+{% block body %}{% endblock %}</main>
+<footer><p class="kn">ಸಿರಿಗನ್ನಡಂ ಗೆಲ್ಗೆ, ಸಿರಿಗನ್ನಡಂ ಬಾಳ್ಗೆ</p><p>Built with pride for our class celebration.</p><p style="margin-top: 8px; font-weight: 600; opacity: 0.8;">Built by Guru</p></footer>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body></html>

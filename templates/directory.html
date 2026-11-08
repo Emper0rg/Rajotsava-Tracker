@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block body %}
+<section class="box"><div class="row"><h2>Student contribution directory</h2><span class="pill">{{ s.contributors }} of {{ s.students }} contributed</span></div>
+<div class="tools"><input id="q" placeholder="Search student name…">
+<button class="chip on" data-f="all">All</button><button class="chip" data-f="done">Contributed</button><button class="chip" data-f="wait">Awaiting</button></div>
+<table><thead><tr><th>#</th><th>Student</th><th>Section</th><th>Verified amount</th><th>Status</th></tr></thead><tbody>
+	{% for st in students %}<tr data-name="{{ st.name|lower }}" data-s="{{ 'done' if st.total else 'wait' }}">
+	<td>{{ loop.index }}</td><td>{{ st.name }}</td><td>{{ st.section }}</td><td>₹{{ st.total }}</td>
+	<td><span class="tag {{ 'done' if st.total else '' }}">{{ 'Contributed' if st.total else 'Awaiting' }}</span></td></tr>
+	{% else %}<tr><td colspan="5">No students yet. A CR can add them in the admin tab.</td></tr>{% endfor %}</tbody></table></section>{% endblock %}

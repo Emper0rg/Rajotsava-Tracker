@@ -1,0 +1,28 @@
+{% extends "base.html" %}{% block body %}
+{% if login %}
+<form class="box narrow" method="post" action="{{ url_for('login') }}"><h2>CR login</h2>
+<input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Section<select name="section" required><option value="A">Section A</option><option value="B">Section B</option><option value="C">Section C</option></select></label>
+<label>Password<input type="password" name="password" required autofocus></label><button class="btn">Log in</button></form>
+{% else %}
+{% macro acts(p) %}<form class="inline" method="post" action="{{ url_for('set_status', pid=p.id, action='verified') }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="chip ok">Verify</button></form>
+<form class="inline" method="post" action="{{ url_for('set_status', pid=p.id, action='rejected') }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="chip no">Reject</button></form>{% endmacro %}
+<section class="box"><div class="row"><h2>Pending claims ({{ pending|length }})</h2>
+<span><a href="{{ url_for('export') }}">Download CSV</a>
+<form class="inline" method="post" action="{{ url_for('logout') }}"><input type="hidden" name="csrf" value="{{ csrf }}"><button class="link">Log out</button></form></span></div>
+<table><tbody>{% for p in pending %}<tr><td data-label="Student">{{ p.student.name }}</td><td data-label="Amount">₹{{ p.amount }}</td><td data-label="UTR">UTR {{ p.utr }}</td><td data-label="Action">{{ acts(p) }}</td></tr>
+	{% else %}<tr><td style="text-align: center; width: 100%;">No claims waiting. Match each UTR with your UPI app before verifying.</td></tr>{% endfor %}</tbody></table></section>
+<section class="stats two">
+<form class="box" method="post" action="{{ url_for('cash') }}"><h3>Record a cash payment</h3><input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Student<select name="student_id" required><option value="">Select…</option>{% for st in students %}<option value="{{ st.id }}">{{ st.name }}</option>{% endfor %}</select></label>
+<label>Amount (₹)<input type="number" name="amount" value="{{ cfg.SUGGESTED }}" min="1" required></label><button class="btn">Save cash payment</button></form>
+<form class="box" method="post" action="{{ url_for('add_students') }}"><h3>Add students</h3><input type="hidden" name="csrf" value="{{ csrf }}">
+<label>Section<select name="section" required><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></label>
+<label>One name per line<textarea name="names" rows="5"></textarea></label><button class="btn">Add students</button></form></section>
+<section class="box"><h2>Cultural Program Interests</h2>
+	<table><tbody>{% for st in students if st.cultural_interest %}
+	<tr><td data-label="Student">{{ st.name }}</td><td data-label="Section">{{ st.section }}</td><td data-label="Interest">{{ st.cultural_interest }}</td></tr>
+	{% else %}<tr><td colspan="3" style="text-align: center;">No cultural interests recorded yet.</td></tr>{% endfor %}</tbody></table></section>
+<section class="box"><h2>Recent decisions</h2><table><tbody>{% for p in recent %}<tr><td data-label="Student">{{ p.student.name }}</td><td data-label="Amount">₹{{ p.amount }}</td><td data-label="Method">{{ p.method }}</td>
+	<td data-label="Status"><span class="tag {{ 'done' if p.status=='verified' }}">{{ p.status }}</span></td><td data-label="Action">{{ acts(p) }}</td></tr>{% endfor %}</tbody></table></section>
+{% endif %}{% endblock %}
