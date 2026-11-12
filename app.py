@@ -26,9 +26,9 @@ db = SQLAlchemy(app)
 class Student(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
-    usn = db.Column(db.String(20), unique=True, nullable=False)
+    usn = db.Column(db.String(20), unique=True)
     roll_no = db.Column(db.Integer)
-    year = db.Column(db.Integer, nullable=False) # 1, 2, or 3
+    year = db.Column(db.Integer, default=1)  # 1, 2, or 3
     section = db.Column(db.String(1), default="A")
     cultural_interest = db.Column(db.String(255))
     payments = db.relationship("Payment", backref="student")
@@ -43,8 +43,8 @@ class Payment(db.Model):
     student_id = db.Column(db.Integer, db.ForeignKey("student.id"), nullable=False)
     amount = db.Column(db.Integer, nullable=False)
     method = db.Column(db.String(10), default="upi")        # upi | cash
-    utr = db.Column(db.String(20), unique=True)              # cash has none
-    status = db.Column(db.String(10), default="pending")     # pending | verified | rejected
+    utr = db.Column(db.String(20), unique=True)             # cash has none
+    status = db.Column(db.String(10), default="pending")    # pending | verified | rejected
     created = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -154,9 +154,9 @@ def admin():
     n = len(students)
     who = {p.student_id for p in ok}
     s = dict(total=sum(p.amount for p in ok), contributors=len(who), students=n,
-            upi=sum(p.amount for p in ok if p.method == "upi"),
-            cash=sum(p.amount for p in ok if p.method == "cash"),
-            pct=round(100 * len(who) / n) if n else 0)
+             upi=sum(p.amount for p in ok if p.method == "upi"),
+             cash=sum(p.amount for p in ok if p.method == "cash"),
+             pct=round(100 * len(who) / n) if n else 0)
 
     return render_template("admin.html", login=False, s=s,
                            pending=[p for p in pays if p.status == "pending"],
