@@ -5,7 +5,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const CR_CONTACTS = {
         "1-A": { name: "Manohar R", phone: "+91 90190 41255", wa: "919019041255" },
         "1-B": { name: "Mohammed Riyan", phone: "+91 98867 79436", wa: "919886779436" },
-        "2-A": { name: "Guru Vishnu M", phone: "+91 96639 79235", wa: "919663979235" },
+        "2-A": {
+            name: "Guru Vishnu M & Shwetha M R",
+            phone: "+91 96639 79235 / +91 73381 12694",
+            wa: "919663979235",
+            contacts: [
+                { name: "Guru Vishnu M", phone: "+91 96639 79235", wa: "919663979235" },
+                { name: "Shwetha M R", phone: "+91 73381 12694", wa: "917338112694" }
+            ]
+        },
         "2-B": { name: "Prasad Mouli", phone: "+91 97432 32215", wa: "919743232215" },
         "2-C": { name: "Guru Kiran", phone: "+91 90198 49002", wa: "919019849002" },
         "3":   { name: "Suhel Siddiqee", phone: "+91 81977 02182", wa: "918197702182" },
@@ -75,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Helper to update WhatsApp share link
     const updateWhatsappLink = () => {
-        if (!confirmedStudent || !crWhatsappBtn) return;
+        if (!confirmedStudent) return;
         const cr = getCR(confirmedStudent.year, confirmedStudent.section);
         if (!cr) return;
 
@@ -84,8 +92,29 @@ document.addEventListener("DOMContentLoaded", () => {
         const classLabel = confirmedStudent.year === '3' ? '3rd Year' : `${confirmedStudent.year} Year Sec ${confirmedStudent.section}`;
         const utrText = utr ? `UTR: ${utr}` : 'UTR: (refer screenshot)';
 
-        const msg = `Hi ${cr.name}, I have made my payment of ₹${amt} for Kannada Rajyotsava.\n\nStudent: ${confirmedStudent.name}\nClass: ${classLabel}\nUSN: ${confirmedStudent.usn || 'N/A'}\n${utrText}\n\nPlease find my payment screenshot attached. Kindly verify!`;
-        crWhatsappBtn.href = `https://wa.me/${cr.wa}?text=${encodeURIComponent(msg)}`;
+        const crWaContainer = document.getElementById('cr-whatsapp-container');
+        if (!crWaContainer) return;
+
+        if (cr.contacts && cr.contacts.length > 1) {
+            crWaContainer.innerHTML = '';
+            cr.contacts.forEach(c => {
+                const msg = `Hi ${c.name}, I have made my payment of ₹${amt} for Kannada Rajyotsava.\n\nStudent: ${confirmedStudent.name}\nClass: ${classLabel}\nUSN: ${confirmedStudent.usn || 'N/A'}\n${utrText}\n\nPlease find my payment screenshot attached. Kindly verify!`;
+                const btn = document.createElement('a');
+                btn.href = `https://wa.me/${c.wa}?text=${encodeURIComponent(msg)}`;
+                btn.target = '_blank';
+                btn.className = 'btn';
+                btn.style.cssText = 'background: #25d366; color: #000; font-weight: 700; text-decoration: none; padding: 10px 18px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto; margin: 4px;';
+                btn.innerHTML = `<span>💬</span> Send to ${c.name} (${c.phone})`;
+                crWaContainer.appendChild(btn);
+            });
+        } else {
+            const msg = `Hi ${cr.name}, I have made my payment of ₹${amt} for Kannada Rajyotsava.\n\nStudent: ${confirmedStudent.name}\nClass: ${classLabel}\nUSN: ${confirmedStudent.usn || 'N/A'}\n${utrText}\n\nPlease find my payment screenshot attached. Kindly verify!`;
+            crWaContainer.innerHTML = `
+                <a id="cr-whatsapp-btn" href="https://wa.me/${cr.wa}?text=${encodeURIComponent(msg)}" target="_blank" class="btn" style="background: #25d366; color: #000; font-weight: 700; text-decoration: none; padding: 10px 20px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: auto; margin-top: 0;">
+                    <span>💬</span> Share Screenshot on WhatsApp
+                </a>
+            `;
+        }
     };
 
     if (utrInput) utrInput.addEventListener('input', updateWhatsappLink);
@@ -367,14 +396,34 @@ document.addEventListener("DOMContentLoaded", () => {
         const y = cultYear.value;
         const s = cultSection ? cultSection.value : '';
         const cr = getCR(y, s);
+        const cultCrContainer = document.getElementById('cult-cr-whatsapp-container');
 
         if (cr && (y === '3' || s)) {
             cultCrNotice.style.display = 'block';
             if (cultCrName) cultCrName.textContent = cr.name;
             if (cultCrPhone) cultCrPhone.textContent = cr.phone;
-            if (cultCrWhatsappBtn) {
-                const msg = `Hi ${cr.name}, I am participating in Kannada Rajyotsava Cultural Programs (${currentPerfType.toUpperCase()} performance). Please note my entry!`;
-                cultCrWhatsappBtn.href = `https://wa.me/${cr.wa}?text=${encodeURIComponent(msg)}`;
+
+            if (cultCrContainer) {
+                if (cr.contacts && cr.contacts.length > 1) {
+                    cultCrContainer.innerHTML = '';
+                    cr.contacts.forEach(c => {
+                        const msg = `Hi ${c.name}, I am participating in Kannada Rajyotsava Cultural Programs (${currentPerfType.toUpperCase()} performance). Please note my entry!`;
+                        const btn = document.createElement('a');
+                        btn.href = `https://wa.me/${c.wa}?text=${encodeURIComponent(msg)}`;
+                        btn.target = '_blank';
+                        btn.className = 'chip';
+                        btn.style.cssText = 'background: #25d366; color: #000; font-weight: 700; text-decoration: none; padding: 8px 16px; display: inline-flex; align-items: center; gap: 6px; margin: 4px;';
+                        btn.innerHTML = `<span>💬</span> Message ${c.name} (${c.phone})`;
+                        cultCrContainer.appendChild(btn);
+                    });
+                } else {
+                    const msg = `Hi ${cr.name}, I am participating in Kannada Rajyotsava Cultural Programs (${currentPerfType.toUpperCase()} performance). Please note my entry!`;
+                    cultCrContainer.innerHTML = `
+                        <a id="cult-cr-whatsapp-btn" href="https://wa.me/${cr.wa}?text=${encodeURIComponent(msg)}" target="_blank" class="chip" style="background: #25d366; color: #000; font-weight: 700; text-decoration: none; padding: 8px 18px; display: inline-flex; align-items: center; gap: 6px;">
+                            <span>💬</span> Drop a Message to Class CR on WhatsApp
+                        </a>
+                    `;
+                }
             }
         } else {
             cultCrNotice.style.display = 'none';

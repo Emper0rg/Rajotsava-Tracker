@@ -41,7 +41,16 @@ CR_PASSWORDS = {
 CR_CONTACTS = {
     "1-A": {"name": "Manohar R", "phone": "+91 90190 41255", "wa": "919019041255", "label": "1st Year Sec A"},
     "1-B": {"name": "Mohammed Riyan", "phone": "+91 98867 79436", "wa": "919886779436", "label": "1st Year Sec B"},
-    "2-A": {"name": "Guru Vishnu M", "phone": "+91 96639 79235", "wa": "919663979235", "label": "2nd Year Sec A"},
+    "2-A": {
+        "name": "Guru Vishnu M & Shwetha M R",
+        "phone": "+91 96639 79235 / +91 73381 12694",
+        "wa": "919663979235",
+        "label": "2nd Year Sec A",
+        "contacts": [
+            {"name": "Guru Vishnu M", "phone": "+91 96639 79235", "wa": "919663979235"},
+            {"name": "Shwetha M R", "phone": "+91 73381 12694", "wa": "917338112694"}
+        ]
+    },
     "2-B": {"name": "Prasad Mouli", "phone": "+91 97432 32215", "wa": "919743232215", "label": "2nd Year Sec B"},
     "2-C": {"name": "Guru Kiran", "phone": "+91 90198 49002", "wa": "919019849002", "label": "2nd Year Sec C"},
     "3":   {"name": "Suhel Siddiqee", "phone": "+91 81977 02182", "wa": "918197702182", "label": "3rd Year"},
