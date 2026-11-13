@@ -3,32 +3,61 @@
 <form class="box narrow" method="post" action="{{ url_for('login') }}">
     <h2>CR Admin Login</h2>
     <p class="small" style="color: #bbb; margin-bottom: 16px;">
-        Select your class, section, and enter your dedicated CR admin password.
+        Select your class/section and enter your dedicated CR admin password.
     </p>
     <input type="hidden" name="csrf" value="{{ csrf }}">
 
-    <label>Class / Year
-        <select name="year" required>
+    <label for="admin-select-year">Class / Year
+        <select name="year" id="admin-select-year" required>
             <option value="1">1st Year</option>
             <option value="2">2nd Year</option>
             <option value="3">3rd Year</option>
         </select>
     </label>
 
-    <label>Section
-        <select name="section" required>
-            <option value="A">Section A</option>
-            <option value="B">Section B</option>
-            <option value="C">Section C</option>
-        </select>
-    </label>
+    <div id="admin-section-wrapper">
+        <label for="admin-select-section">Section
+            <select name="section" id="admin-select-section" required>
+                <option value="A">Section A</option>
+                <option value="B">Section B</option>
+            </select>
+        </label>
+    </div>
 
     <label>CR Password
-        <input type="password" name="password" required autofocus placeholder="Enter password">
+        <input type="password" name="password" required autofocus placeholder="Enter CR password">
     </label>
 
     <button class="btn" type="submit">Log in to CR Portal</button>
 </form>
+
+<script>
+    const adminYear = document.getElementById('admin-select-year');
+    const adminSecWrapper = document.getElementById('admin-section-wrapper');
+    const adminSec = document.getElementById('admin-select-section');
+
+    const updateAdminSecOpts = () => {
+        if (!adminYear || !adminSec) return;
+        const y = adminYear.value;
+        if (y === '3') {
+            adminSecWrapper.style.display = 'none';
+            adminSec.required = false;
+            adminSec.innerHTML = '<option value="">Not Applicable</option>';
+        } else if (y === '1') {
+            adminSecWrapper.style.display = 'block';
+            adminSec.required = true;
+            adminSec.innerHTML = '<option value="A">Section A</option><option value="B">Section B</option>';
+        } else if (y === '2') {
+            adminSecWrapper.style.display = 'block';
+            adminSec.required = true;
+            adminSec.innerHTML = '<option value="A">Section A</option><option value="B">Section B</option><option value="C">Section C</option>';
+        }
+    };
+    if (adminYear) {
+        adminYear.onchange = updateAdminSecOpts;
+        updateAdminSecOpts();
+    }
+</script>
 {% else %}
 {% macro acts(p) %}
 <form class="inline" method="post" action="{{ url_for('set_status', pid=p.id, action='verified') }}">
@@ -47,7 +76,7 @@
             <h2 style="margin: 0;">Pending Claims ({{ pending|length }})</h2>
             <div style="margin-top: 6px;">
                 <span class="pill" style="background: var(--bright-yellow); color: var(--jet-black); font-weight: bold;">
-                    CR Admin: {{ admin_year }} Year · Section {{ admin_section }}
+                    CR Admin: {{ admin_year }} Year{% if admin_section %} · Section {{ admin_section }}{% endif %}
                 </span>
                 <span class="pill" style="margin-left: 6px;">
                     {{ s.contributors }} / {{ s.students }} Verified (₹{{ s.total }})
@@ -101,7 +130,7 @@
     <!-- Record Cash Payment Form -->
     <form class="box" method="post" action="{{ url_for('cash') }}">
         <h3>Record a Cash Payment</h3>
-        <p class="small" style="color: #bbb;">Record cash handed directly to you for {{ admin_year }} Year Sec {{ admin_section }}.</p>
+        <p class="small" style="color: #bbb;">Record cash handed directly to you for {{ admin_year }} Year{% if admin_section %} Sec {{ admin_section }}{% endif %}.</p>
         <input type="hidden" name="csrf" value="{{ csrf }}">
 
         <label>Student
@@ -124,7 +153,7 @@
     <form class="box" method="post" action="{{ url_for('add_students') }}">
         <h3>Add Students to Roster</h3>
         <p class="small" style="color: #bbb;">
-            Adding to <b>{{ admin_year }} Year - Section {{ admin_section }}</b>. Enter one student per line. Format: <code>USN, Name</code> or just <code>Name</code>.
+            Adding to <b>{{ admin_year }} Year{% if admin_section %} - Section {{ admin_section }}{% endif %}</b>. Enter one student per line. Format: <code>USN, Name</code> or just <code>Name</code>.
         </p>
         <input type="hidden" name="csrf" value="{{ csrf }}">
 
@@ -138,7 +167,7 @@
 
 <!-- Cultural Program Interests -->
 <section class="box" style="margin-top: 20px;">
-    <h2>Cultural Program Interests ({{ admin_year }} Year Sec {{ admin_section }})</h2>
+    <h2>Cultural Program Interests ({{ admin_year }} Year{% if admin_section %} Sec {{ admin_section }}{% endif %})</h2>
     <div style="overflow-x: auto; margin-top: 10px;">
         <table>
             <thead>
@@ -169,7 +198,7 @@
 
 <!-- Recent Decisions -->
 <section class="box" style="margin-top: 20px;">
-    <h2>Recent Decisions ({{ admin_year }} Year Sec {{ admin_section }})</h2>
+    <h2>Recent Decisions ({{ admin_year }} Year{% if admin_section %} Sec {{ admin_section }}{% endif %})</h2>
     <div style="overflow-x: auto; margin-top: 10px;">
         <table>
             <thead>

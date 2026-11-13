@@ -96,15 +96,19 @@ def api_students():
     query = Student.query
     if year:
         query = query.filter_by(year=year)
-    if section:
+    # 3rd year has no sections
+    if year == 3:
+        pass
+    elif section:
         query = query.filter_by(section=section)
+
     students = query.order_by(Student.usn, Student.name).all()
     return jsonify([{
         "id": s.id,
         "name": s.name,
         "usn": s.usn or "",
         "year": s.year,
-        "section": s.section
+        "section": s.section if s.year != 3 else ""
     } for s in students])
 
 
@@ -147,14 +151,24 @@ def directory():
                            students=Student.query.order_by(Student.year, Student.section, Student.name).all())
 
 
+@app.get("/qr/<int:year>")
 @app.get("/qr/<int:year>/<section>")
 @app.get("/qr.png")
 def qr(year=None, section=None):
-    # If specific year and section requested, check for dedicated file
+    # If 3rd year requested (no section needed)
+    if year == 3:
+        for filename in ("qr_3.jpeg", "qr_3.jpg", "qr_3.png", "qr_3_A.jpeg", "qr_3_A.png"):
+            path = os.path.join(app.static_folder, "qrs", filename)
+            if os.path.exists(path):
+                return send_file(path)
+
+    # If specific year and section requested
     if year and section:
-        specific = os.path.join(app.static_folder, "qrs", f"qr_{year}_{section.upper()}.png")
-        if os.path.exists(specific):
-            return send_file(specific)
+        sec = section.strip().upper()
+        for ext in ("jpeg", "jpg", "png"):
+            specific = os.path.join(app.static_folder, "qrs", f"qr_{year}_{sec}.{ext}")
+            if os.path.exists(specific):
+                return send_file(specific)
 
     # Fallback to static/qr.png
     custom = os.path.join(app.static_folder, "qr.png")
@@ -181,7 +195,7 @@ def admin():
     if admin_year:
         query_pays = query_pays.filter(Student.year == admin_year)
         query_students = query_students.filter(Student.year == admin_year)
-    if admin_section:
+    if admin_year != 3 and admin_section:
         query_pays = query_pays.filter(Student.section == admin_section)
         query_students = query_students.filter(Student.section == admin_section)
 
@@ -206,22 +220,23 @@ def admin():
                            recent=[p for p in pays if p.status != "pending"][:30],
                            students=students,
                            admin_year=admin_year,
-                           admin_section=admin_section)
+                           admin_section=admin_section if admin_year != 3 else "")
 
 
 @app.post("/admin/login")
 def login():
     year = request.form.get("year", type=int)
-    section = request.form.get("section", "").strip().upper()
+    section = request.form.get("section", "").strip().upper() if year != 3 else None
     password = request.form.get("password", "")
 
     expected_pwd = C.get_cr_password(year, section)
     if expected_pwd and secrets.compare_digest(password, expected_pwd):
         session["admin"] = True
         session["admin_year"] = year
-        session["admin_section"] = section
+        session["admin_section"] = section or ""
     else:
-        flash(f"Wrong password or selection for {year} Year Section {section}.", "err")
+        scope_label = "3rd Year" if year == 3 else f"{year} Year Section {section}"
+        flash(f"Wrong password or selection for {scope_label}.", "err")
     return redirect(url_for("admin"))
 
 
@@ -260,8 +275,11 @@ def cash():
 @admin_only
 def add_students():
     year = session.get("admin_year", 1)
-    section = session.get("admin_section", "A")
-    have = {s.name.lower() for s in Student.query.filter_by(year=year, section=section).all()}
+    section = session.get("admin_section", "A") if year != 3 else "A"
+    query = Student.query.filter_by(year=year)
+    if year != 3 and section:
+        query = query.filter_by(section=section)
+    have = {s.name.lower() for s in query.all()}
     added = 0
     for line in request.form.get("names", "").splitlines():
         line = line.strip()
@@ -279,7 +297,8 @@ def add_students():
             added += 1
 
     db.session.commit()
-    flash(f"Added {added} student(s) to {year} Year Section {section}.", "ok")
+    scope_label = "3rd Year" if year == 3 else f"{year} Year Section {section}"
+    flash(f"Added {added} student(s) to {scope_label}.", "ok")
     return redirect(url_for("admin"))
 
 
@@ -291,7 +310,7 @@ def export():
     query = Payment.query.join(Student)
     if admin_year:
         query = query.filter(Student.year == admin_year)
-    if admin_section:
+    if admin_year != 3 and admin_section:
         query = query.filter(Student.section == admin_section)
 
     out = io.StringIO()
@@ -302,14 +321,14 @@ def export():
             p.student.name,
             p.student.usn or "",
             p.student.year,
-            p.student.section,
+            p.student.section if p.student.year != 3 else "N/A",
             p.amount,
             p.method,
             p.utr or "",
             p.status,
             p.created.strftime("%Y-%m-%d %H:%M")
         ])
-    filename = f"payments_{admin_year}_{admin_section}.csv" if admin_year and admin_section else "payments.csv"
+    filename = f"payments_{admin_year}_{admin_section}.csv" if admin_year and admin_section else f"payments_year_{admin_year}.csv"
     return Response(out.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": f"attachment; filename={filename}"})
 

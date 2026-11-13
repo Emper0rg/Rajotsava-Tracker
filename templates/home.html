@@ -31,7 +31,7 @@
     <section class="box" id="student-verification-box">
         <h3>1. Select Your Details</h3>
         <p class="small" style="color: #bbb; margin-bottom: 16px;">
-            Choose your Class, Section, and USN to fetch your details and display your dedicated CR payment QR code.
+            Choose your Class, Section, and USN to fetch your name and dedicated CR payment QR code.
         </p>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
@@ -44,19 +44,16 @@
                     <option value="3">3rd Year</option>
                 </select>
             </div>
-            <div>
+            <div id="section-select-wrapper">
                 <label for="select-section">Section</label>
                 <select id="select-section" required>
-                    <option value="">-- Select Section --</option>
-                    <option value="A">Section A</option>
-                    <option value="B">Section B</option>
-                    <option value="C">Section C</option>
+                    <option value="">-- Choose Section --</option>
                 </select>
             </div>
             <div>
                 <label for="select-usn">USN Number</label>
                 <select id="select-usn" required disabled>
-                    <option value="">-- Choose Year &amp; Section first --</option>
+                    <option value="">-- Select class first --</option>
                 </select>
             </div>
         </div>
@@ -144,7 +141,7 @@
             <select name="student_id" required>
                 <option value="">Choose from student list…</option>
                 {% for st in students %}
-                <option value="{{ st.id }}">{{ st.name }} ({{ st.year }} yr {{ st.section }}{% if st.usn %} · {{ st.usn }}{% endif %})</option>
+                <option value="{{ st.id }}">{{ st.name }} ({{ st.year }} yr{% if st.year != 3 and st.section %} {{ st.section }}{% endif %}{% if st.usn %} · {{ st.usn }}{% endif %})</option>
                 {% endfor %}
             </select>
         </label>

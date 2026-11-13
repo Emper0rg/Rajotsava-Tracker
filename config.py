@@ -11,27 +11,40 @@ AMOUNTS = [100, 200, 300, 500]
 UPI_ID = "9611299256@axl"
 UPI_NAME = "Guru"
 
-# Available Years and Sections
-YEARS = [
-    {"val": 1, "label": "1st Year"},
-    {"val": 2, "label": "2nd Year"},
-    {"val": 3, "label": "3rd Year"},
-]
+# Year and Section configurations
+# 1st Year: only Sections A and B
+# 2nd Year: Sections A, B, and C
+# 3rd Year: No sections (single batch)
+CLASSES = {
+    1: {"name": "1st Year", "sections": ["A", "B"]},
+    2: {"name": "2nd Year", "sections": ["A", "B", "C"]},
+    3: {"name": "3rd Year", "sections": []},
+}
 
-SECTIONS = ["A", "B", "C"]
+# Dedicated CR Passwords
+CR_PASSWORDS = {
+    # 1st Year (Sections A and B only)
+    "1-A": os.environ.get("CR_PASSWORD_1A", "admin1A"),
+    "1-B": os.environ.get("CR_PASSWORD_1B", "admin1B"),
 
-# Admin passwords for each (year, section) combination:
-# Format of key: f"{year}-{section}" (e.g. "1-A", "2-B")
-# Environment variables: CR_PASSWORD_1A, CR_PASSWORD_1B, etc.
-# Default fallback passwords: admin1A, admin1B, admin2A, etc.
-CR_PASSWORDS = {}
-for y in [1, 2, 3]:
-    for s in ["A", "B", "C"]:
-        env_key = f"CR_PASSWORD_{y}{s}"
-        default_pwd = f"admin{y}{s}"
-        CR_PASSWORDS[f"{y}-{s}"] = os.environ.get(env_key, default_pwd)
+    # 2nd Year (Sections A, B, and C)
+    "2-A": os.environ.get("CR_PASSWORD_2A", "admin2A"),
+    "2-B": os.environ.get("CR_PASSWORD_2B", "admin2B"),
+    "2-C": os.environ.get("CR_PASSWORD_2C", "admin2C"),
 
-def get_cr_password(year, section):
-    if not year or not section:
+    # 3rd Year (No section)
+    "3": os.environ.get("CR_PASSWORD_3", os.environ.get("CR_PASSWORD_3A", "admin3")),
+    "3-A": os.environ.get("CR_PASSWORD_3", os.environ.get("CR_PASSWORD_3A", "admin3")),
+}
+
+def get_cr_password(year, section=None):
+    if not year:
         return None
-    return CR_PASSWORDS.get(f"{year}-{section.upper()}")
+    try:
+        y = int(year)
+    except (ValueError, TypeError):
+        return None
+    if y == 3:
+        return CR_PASSWORDS.get("3")
+    sec = section.strip().upper() if section else ""
+    return CR_PASSWORDS.get(f"{y}-{sec}")

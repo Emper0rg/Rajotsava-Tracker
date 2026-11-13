@@ -16,10 +16,10 @@
                 <option value="3">3rd Year</option>
             </select>
         </div>
-        <div>
+        <div id="dir-section-filter-wrapper">
             <label for="filter-sec" style="margin-top: 0; font-size: 0.85rem; color: #aaa;">Filter by Section</label>
             <select id="filter-sec" style="margin-top: 4px;">
-                <option value="all">All Sections (A, B, C)</option>
+                <option value="all">All Sections</option>
                 <option value="A">Section A</option>
                 <option value="B">Section B</option>
                 <option value="C">Section C</option>
@@ -49,12 +49,12 @@
             </thead>
             <tbody>
                 {% for st in students %}
-                <tr data-name="{{ st.name|lower }}" data-usn="{{ (st.usn or '')|lower }}" data-year="{{ st.year }}" data-sec="{{ st.section }}" data-s="{{ 'done' if st.total else 'wait' }}">
+                <tr data-name="{{ st.name|lower }}" data-usn="{{ (st.usn or '')|lower }}" data-year="{{ st.year }}" data-sec="{{ st.section if st.year != 3 else '' }}" data-s="{{ 'done' if st.total else 'wait' }}">
                     <td data-label="#">{{ loop.index }}</td>
                     <td data-label="USN"><code>{{ st.usn or '—' }}</code></td>
                     <td data-label="Student"><b>{{ st.name }}</b></td>
                     <td data-label="Year">{{ st.year }} yr</td>
-                    <td data-label="Sec">{{ st.section }}</td>
+                    <td data-label="Sec">{{ st.section if st.year != 3 else '—' }}</td>
                     <td data-label="Verified Amount">₹{{ st.total }}</td>
                     <td data-label="Status">
                         <span class="tag {{ 'done' if st.total else '' }}">

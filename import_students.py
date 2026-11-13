@@ -150,7 +150,66 @@ def import_students():
             except Exception as e:
                 print(f"Error reading 2nd A: {e}")
 
-        # 4. 3rd Year Section A
+        # 4. 2nd Year Section B
+        file_2b = os.path.join(student_lists_dir, "2nd_Year_B_Controlistfinal.xlsx")
+        if os.path.exists(file_2b):
+            try:
+                df2b = pd.read_excel(file_2b, skiprows=3)
+                df2b = df2b.dropna(subset=["USN", "Student Name"])
+                count_2b = 0
+                for _, row in df2b.iterrows():
+                    usn = str(row["USN"]).strip()
+                    name = str(row["Student Name"]).strip()
+                    roll = int(row["#"]) if pd.notna(row.get("#")) and str(row.get("#")).isdigit() else None
+                    if usn.upper().startswith("U03"):
+                        candidate_usn = usn
+                        suffix = 2
+                        while candidate_usn.upper() in existing_usns:
+                            # If exact same name and USN already added, skip
+                            match = Student.query.filter_by(usn=candidate_usn).first()
+                            if match and match.name.lower() == name.lower():
+                                candidate_usn = None
+                                break
+                            candidate_usn = f"{usn}_{suffix}"
+                            suffix += 1
+                        if candidate_usn:
+                            db.session.add(Student(name=name, usn=candidate_usn, year=2, section="B", roll_no=roll))
+                            existing_usns.add(candidate_usn.upper())
+                            count_2b += 1
+                print(f"Imported {count_2b} students for 2nd Year Section B")
+            except Exception as e:
+                print(f"Error reading 2nd B: {e}")
+
+        # 5. 2nd Year Section C
+        file_2c = os.path.join(student_lists_dir, "2nd_Year_C_Contribution_List.xlsx")
+        if os.path.exists(file_2c):
+            try:
+                df2c = pd.read_excel(file_2c, skiprows=3)
+                df2c = df2c.dropna(subset=["USN", "Student Name"])
+                count_2c = 0
+                for _, row in df2c.iterrows():
+                    usn = str(row["USN"]).strip()
+                    name = str(row["Student Name"]).strip()
+                    roll = int(row["#"]) if pd.notna(row.get("#")) and str(row.get("#")).isdigit() else None
+                    if usn.upper().startswith("U03"):
+                        candidate_usn = usn
+                        suffix = 2
+                        while candidate_usn.upper() in existing_usns:
+                            match = Student.query.filter_by(usn=candidate_usn).first()
+                            if match and match.name.lower() == name.lower():
+                                candidate_usn = None
+                                break
+                            candidate_usn = f"{usn}_{suffix}"
+                            suffix += 1
+                        if candidate_usn:
+                            db.session.add(Student(name=name, usn=candidate_usn, year=2, section="C", roll_no=roll))
+                            existing_usns.add(candidate_usn.upper())
+                            count_2c += 1
+                print(f"Imported {count_2c} students for 2nd Year Section C")
+            except Exception as e:
+                print(f"Error reading 2nd C: {e}")
+
+        # 6. 3rd Year Section A
         count_3a = 0
         for idx, (usn, name) in enumerate(THIRD_YEAR_STUDENTS, start=1):
             usn_clean = usn.strip()
