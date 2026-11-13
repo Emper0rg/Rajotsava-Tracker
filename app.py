@@ -127,21 +127,70 @@ def claim():
     else:
         db.session.add(Payment(student_id=s.id, amount=amount, utr=utr))
         db.session.commit()
-        flash("Thanks! Your payment will show in the directory once your CR verifies it.", "ok")
+        cr = C.get_cr_contact(s.year, s.section)
+        cr_note = f" Please share your payment screenshot on WhatsApp with your CR ({cr['name']} at {cr['phone']}) to get it verified immediately!" if cr else ""
+        flash(f"Contribution registered!{cr_note}", "ok")
     return redirect(url_for("home"))
 
 
 @app.post("/cultural")
 def cultural():
-    sid = request.form.get("student_id", type=int)
+    perf_type = request.form.get("perf_type", "solo").strip().lower()
     interest = request.form.get("interest", "").strip()
-    s = db.session.get(Student, sid)
-    if not s or not interest:
-        flash("Please select your name and enter your interest.", "err")
-    else:
-        s.cultural_interest = interest
+    year = request.form.get("year", type=int)
+    section = request.form.get("section", "").strip().upper() if year != 3 else ""
+
+    if not interest:
+        flash("Please enter what you would like to perform.", "err")
+        return redirect(url_for("home"))
+
+    cr = C.get_cr_contact(year, section)
+    cr_note = f" Please drop a WhatsApp message to your Class CR ({cr['name']} at {cr['phone']}) with your track and audio requirements!" if cr else ""
+
+    if perf_type == "solo":
+        sid = request.form.get("student_id", type=int)
+        s = db.session.get(Student, sid) if sid else None
+        if not s:
+            flash("Please select your name from the student roster.", "err")
+            return redirect(url_for("home"))
+
+        s.cultural_interest = f"[Solo] {interest}"
         db.session.commit()
-        flash("Your interest in cultural programs has been recorded!", "ok")
+        flash(f"Solo performance registered for {s.name}!{cr_note}", "ok")
+
+    elif perf_type == "group":
+        member_ids_raw = request.form.get("member_ids", "")
+        id_list = []
+        for x in member_ids_raw.replace(";", ",").split(","):
+            x = x.strip()
+            if x.isdigit():
+                id_list.append(int(x))
+
+        unique_ids = list(dict.fromkeys(id_list))
+        if len(unique_ids) < 2:
+            flash("A group performance must have at least 2 students selected.", "err")
+            return redirect(url_for("home"))
+
+        students = [db.session.get(Student, sid) for sid in unique_ids]
+        valid_students = [s for s in students if s is not None]
+
+        if len(valid_students) < 2:
+            flash("Could not find at least 2 valid students. Please add members from the roster.", "err")
+            return redirect(url_for("home"))
+
+        names = ", ".join(s.name for s in valid_students)
+        group_title = request.form.get("group_name", "").strip()
+        header = f"[Group: {group_title}]" if group_title else "[Group]"
+
+        for s in valid_students:
+            s.cultural_interest = f"{header} {interest} (Team: {names})"
+
+        db.session.commit()
+        flash(f"Group performance registered with {len(valid_students)} members ({names})!{cr_note}", "ok")
+
+    else:
+        flash("Invalid performance type selected.", "err")
+
     return redirect(url_for("home"))
 
 
