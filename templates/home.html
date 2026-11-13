@@ -1,50 +1,157 @@
 {% extends "base.html" %}{% block body %}
-<section class="note"><h2>Be Part of the Grand Celebration!</h2>
-<p>We're organizing a spectacular event in the auditorium, featuring a variety of cultural performances and a festive lunch. To make this happen, we're raising funds for {{ cfg.PURPOSE }}. While ₹{{ cfg.SUGGESTED }} is suggested, any contribution is a gesture of your love for our language and culture.</p></section>
+<section class="note">
+    <h2>Be Part of the Grand Celebration!</h2>
+    <p>We're organizing a spectacular event in the auditorium, featuring a variety of cultural performances and a festive lunch. To make this happen, we're raising funds for {{ cfg.PURPOSE }}. While ₹{{ cfg.SUGGESTED }} is suggested, any contribution is a gesture of your love for our language and culture.</p>
+</section>
 
-<section class="box"><div class="row"><b>Contribution Progress</b><b>{{ s.pct }}%</b></div><div class="bar"><i style="width:{{ s.pct }}%"></i></div></section>
+<section class="box">
+    <div class="row">
+        <b>Contribution Progress</b>
+        <b>{{ s.pct }}%</b>
+    </div>
+    <div class="bar"><i style="width:{{ s.pct }}%"></i></div>
+</section>
 
 <section class="stats">
     <div class="box"><span>Total Collected</span><strong>₹{{ s.total }}</strong></div>
     <div class="box"><span>Active Contributors</span><strong>{{ s.contributors }} / {{ s.students }}</strong></div>
-    <div class="box"><span>UPI vs Cash</span><strong>₹{{ s.upi }} / ₹{{ s.cash }}</strong></div></section>
-
-<div class="row" style="justify-content: center; margin: 20px 0;">
-    <button type="button" class="btn" style="width: auto; padding: 15px 40px; font-size: 1.2rem;" onclick="document.getElementById('payment-section').style.display='block'; this.style.display='none';">Contribute Now 🚀</button>
-</div>
-
-<section class="pay" style="display:none;" id="payment-section">
-    <div class="box"><h3>Complete Payment</h3>
-    <div class="qr-container">
-        <img class="qr" src="{{ url_for('qr') }}" alt="UPI QR code">
-    </div>
-    <div class="row" style="justify-content: center; margin-top: 12px;">
-        <a href="{{ url_for('qr') }}" download="rajyotsava_qr.png" class="chip" style="text-decoration: none; display: flex; align-items: center; gap: 6px;">
-            <span>📥</span> Download QR Code
-        </a>
-    </div>
-    <p class="upi">UPI ID: <b>{{ cfg.UPI_ID }}</b></p>
-    <p class="small">Please verify the recipient name in your app. Keep your UTR number ready.</p></div>
-    <form class="box" method="post" action="{{ url_for('claim') }}">
-        <input type="hidden" name="csrf" value="{{ csrf }}">
-        <h3>2. Register Contribution</h3>
-        <label>Select your name<select name="student_id" required><option value="">Choose from list…</option>
-        {% for st in students %}<option value="{{ st.id }}">{{ st.name }} ({{ st.year }} yr {{ st.section }})</option><% endfor %></select></label>
-        <label>Amount paid (₹)<span class="chips">{% for a in cfg.AMOUNTS %}<button type="button" class="chip {{ 'on' if a==cfg.SUGGESTED }}" data-amt="{{ a }}">₹{{ a }}</button>{% endfor %}</span>
-        <input type="number" name="amount" id="amount" value="{{ cfg.SUGGESTED }}" min="1" required></label>
-        <label>Transaction ID / UTR<input name="utr" inputmode="numeric" maxlength="12" pattern="\d{12}" placeholder="12-digit reference number" required></label>
-        <button class="btn">Verify my payment</button></form>
+    <div class="box"><span>UPI vs Cash</span><strong>₹{{ s.upi }} / ₹{{ s.cash }}</strong></div>
 </section>
 
-<section class="box">
+<!-- Start Button -->
+<div class="row" style="justify-content: center; margin: 24px 0;" id="contribute-start-wrapper">
+    <button type="button" class="btn" style="width: auto; padding: 15px 45px; font-size: 1.25rem; box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);" id="btn-start-contribute">
+        Contribute Now 🚀
+    </button>
+</div>
+
+<!-- Contribute Wizard Flow -->
+<div id="contribute-wizard" style="display: none;">
+    <!-- Step 1: Student Details Form -->
+    <section class="box" id="student-verification-box">
+        <h3>1. Select Your Details</h3>
+        <p class="small" style="color: #bbb; margin-bottom: 16px;">
+            Choose your Class, Section, and USN to fetch your details and display your dedicated CR payment QR code.
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+            <div>
+                <label for="select-year">Class / Year</label>
+                <select id="select-year" required>
+                    <option value="">-- Select Year --</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                </select>
+            </div>
+            <div>
+                <label for="select-section">Section</label>
+                <select id="select-section" required>
+                    <option value="">-- Select Section --</option>
+                    <option value="A">Section A</option>
+                    <option value="B">Section B</option>
+                    <option value="C">Section C</option>
+                </select>
+            </div>
+            <div>
+                <label for="select-usn">USN Number</label>
+                <select id="select-usn" required disabled>
+                    <option value="">-- Choose Year &amp; Section first --</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="usn-loading" style="display: none; color: var(--bright-yellow); margin-top: 10px; font-size: 0.9rem;">
+            ⏳ Loading student list for selected class...
+        </div>
+
+        <div style="margin-top: 16px;">
+            <button type="button" id="btn-confirm-student" class="btn" style="width: auto; padding: 12px 30px; font-size: 1rem;" disabled>
+                Confirm USN &amp; Proceed to Payment →
+            </button>
+        </div>
+
+        <!-- Fetched Student Details Card -->
+        <div id="student-verified-card" style="display: none; margin-top: 16px; padding: 16px; border-radius: 10px; background: rgba(255, 204, 0, 0.08); border: 2px solid var(--bright-yellow);">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <span style="color: var(--bright-yellow); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">✅ Verified Student</span>
+                    <div style="font-size: 1.3rem; font-weight: 700; margin-top: 4px;" id="disp-student-name">Student Name</div>
+                    <div style="color: #bbb; font-size: 0.95rem;" id="disp-student-meta">Year · Section · USN</div>
+                </div>
+                <button type="button" id="btn-change-student" class="chip" style="font-size: 0.85rem; background: #222; color: #fff; border: 1px solid #555;">
+                    Change Selection ✕
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Step 2: Payment & Contribution Submission -->
+    <section class="pay" id="payment-section" style="display: none; margin-top: 20px;">
+        <div class="box">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                <h3 style="margin: 0;">Dedicated CR QR Code</h3>
+                <span class="pill" id="qr-class-badge" style="background: var(--bright-yellow); color: var(--jet-black); font-weight: bold;">Class QR</span>
+            </div>
+            <div class="qr-container">
+                <img class="qr" id="cr-qr-img" src="{{ url_for('qr') }}" alt="Dedicated UPI QR code">
+            </div>
+            <div class="row" style="justify-content: center; margin-top: 14px;">
+                <a id="cr-qr-download" href="{{ url_for('qr') }}" download="rajyotsava_qr.png" class="chip" style="text-decoration: none; display: flex; align-items: center; gap: 6px; padding: 8px 18px;">
+                    <span>📥</span> Download QR Code
+                </a>
+            </div>
+            <p class="upi" style="margin-top: 14px;">UPI ID: <b>{{ cfg.UPI_ID }}</b> ({{ cfg.UPI_NAME }})</p>
+            <p class="small" style="text-align: center; color: #aaa;">Scan with any UPI app (GPay, PhonePe, Paytm). Note down the 12-digit UTR/Txn number.</p>
+        </div>
+
+        <form class="box" method="post" action="{{ url_for('claim') }}">
+            <input type="hidden" name="csrf" value="{{ csrf }}">
+            <input type="hidden" name="student_id" id="form-student-id" required>
+
+            <h3>2. Register Contribution</h3>
+            <div style="margin-bottom: 14px; padding: 10px; background: #161616; border-radius: 8px; border-left: 4px solid var(--bright-yellow);">
+                <span style="font-size: 0.85rem; color: #888;">Contributing Student:</span>
+                <div id="form-student-summary" style="font-weight: 700; color: var(--pure-white); margin-top: 2px;">--</div>
+            </div>
+
+            <label>Amount paid (₹)
+                <span class="chips">
+                    {% for a in cfg.AMOUNTS %}
+                    <button type="button" class="chip {{ 'on' if a==cfg.SUGGESTED }}" data-amt="{{ a }}">₹{{ a }}</button>
+                    {% endfor %}
+                </span>
+                <input type="number" name="amount" id="amount" value="{{ cfg.SUGGESTED }}" min="1" required>
+            </label>
+
+            <label>Transaction ID / UTR
+                <input name="utr" id="utr" inputmode="numeric" maxlength="12" pattern="\d{12}" placeholder="12-digit UPI reference number" required>
+            </label>
+            <p class="small" style="color: #888;">The 12-digit reference number from your UPI payment receipt.</p>
+
+            <button class="btn" type="submit">Verify my payment</button>
+        </form>
+    </section>
+</div>
+
+<!-- Cultural Participation -->
+<section class="box" style="margin-top: 24px;">
     <h3>🎭 Cultural Participation</h3>
-    <p class="small">Want to perform dance, music, or other acts? Let us know!</p>
+    <p class="small" style="color: #bbb;">Want to perform dance, music, drama, or other cultural acts? Register below!</p>
     <form method="post" action="{{ url_for('cultural') }}">
         <input type="hidden" name="csrf" value="{{ csrf }}">
-        <label>Select your name<select name="student_id" required><option value="">Choose from list…</option>
-        {% for st in students %}<option value="{{ st.id }}">{{ st.name }} ({{ st.year }} yr {{ st.section }})</option>{% endfor %}</select></label>
-        <label>What would you like to perform?<input name="interest" placeholder="e.g. Classical Dance, Singing, Skit" required></label>
-        <button class="btn" style="background: var(--bright-yellow); color: var(--jet-black);">Submit Interest</button>
+        <label>Select your name
+            <select name="student_id" required>
+                <option value="">Choose from student list…</option>
+                {% for st in students %}
+                <option value="{{ st.id }}">{{ st.name }} ({{ st.year }} yr {{ st.section }}{% if st.usn %} · {{ st.usn }}{% endif %})</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>What would you like to perform?
+            <input name="interest" placeholder="e.g. Classical Dance, Solo Singing, Skit, Beatboxing" required>
+        </label>
+        <button class="btn" style="background: var(--bright-yellow); color: var(--jet-black);">Submit Cultural Interest</button>
     </form>
 </section>
 {% endblock %}

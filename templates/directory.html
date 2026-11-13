@@ -1,9 +1,74 @@
 {% extends "base.html" %}{% block body %}
-<section class="box"><div class="row"><h2>Student contribution directory</h2><span class="pill">{{ s.contributors }} of {{ s.students }} contributed</span></div>
-<div class="tools"><input id="q" placeholder="Search student name…">
-<button class="chip on" data-f="all">All</button><button class="chip" data-f="done">Contributed</button><button class="chip" data-f="wait">Awaiting</button></div>
-<table><thead><tr><th>#</th><th>Student</th><th>Section</th><th>Verified amount</th><th>Status</th></tr></thead><tbody>
-	{% for st in students %}<tr data-name="{{ st.name|lower }}" data-s="{{ 'done' if st.total else 'wait' }}">
-	<td>{{ loop.index }}</td><td>{{ st.name }}</td><td>{{ st.section }}</td><td>₹{{ st.total }}</td>
-	<td><span class="tag {{ 'done' if st.total else '' }}">{{ 'Contributed' if st.total else 'Awaiting' }}</span></td></tr>
-	{% else %}<tr><td colspan="5">No students yet. A CR can add them in the admin tab.</td></tr>{% endfor %}</tbody></table></section>{% endblock %}
+<section class="box">
+    <div class="row" style="flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between;">
+        <h2>Student Contribution Directory</h2>
+        <span class="pill" id="dir-count-pill">{{ s.contributors }} of {{ s.students }} contributed</span>
+    </div>
+
+    <!-- Filters: Year, Section, Search & Status -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 16px;">
+        <div>
+            <label for="filter-year" style="margin-top: 0; font-size: 0.85rem; color: #aaa;">Filter by Year</label>
+            <select id="filter-year" style="margin-top: 4px;">
+                <option value="all">All Years (1st, 2nd, 3rd)</option>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+            </select>
+        </div>
+        <div>
+            <label for="filter-sec" style="margin-top: 0; font-size: 0.85rem; color: #aaa;">Filter by Section</label>
+            <select id="filter-sec" style="margin-top: 4px;">
+                <option value="all">All Sections (A, B, C)</option>
+                <option value="A">Section A</option>
+                <option value="B">Section B</option>
+                <option value="C">Section C</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="tools" style="margin-top: 14px;">
+        <input id="q" placeholder="Search student name or USN…" style="min-width: 240px;">
+        <button class="chip on" data-f="all">All</button>
+        <button class="chip" data-f="done">Contributed</button>
+        <button class="chip" data-f="wait">Awaiting</button>
+    </div>
+
+    <div style="overflow-x: auto; margin-top: 10px;">
+        <table id="students-table">
+            <thead>
+                <tr>
+                    <th style="width: 50px;">#</th>
+                    <th>USN</th>
+                    <th>Student Name</th>
+                    <th>Year</th>
+                    <th>Sec</th>
+                    <th>Verified Amount</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for st in students %}
+                <tr data-name="{{ st.name|lower }}" data-usn="{{ (st.usn or '')|lower }}" data-year="{{ st.year }}" data-sec="{{ st.section }}" data-s="{{ 'done' if st.total else 'wait' }}">
+                    <td data-label="#">{{ loop.index }}</td>
+                    <td data-label="USN"><code>{{ st.usn or '—' }}</code></td>
+                    <td data-label="Student"><b>{{ st.name }}</b></td>
+                    <td data-label="Year">{{ st.year }} yr</td>
+                    <td data-label="Sec">{{ st.section }}</td>
+                    <td data-label="Verified Amount">₹{{ st.total }}</td>
+                    <td data-label="Status">
+                        <span class="tag {{ 'done' if st.total else '' }}">
+                            {{ 'Contributed' if st.total else 'Awaiting' }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center;">No students found in the database.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}
