@@ -309,29 +309,53 @@ input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible
 }
 
 .chip {
-    padding: 6px 14px;
+    padding: 8px 16px;
     border-radius: 99px;
-    border: 1px solid var(--line);
-    background: var(--pure-white);
+    border: 1px solid #3a3a3a;
+    background: #1e1e1e;
+    color: #d1d5db;
     font: 600 .9rem Figtree, sans-serif;
     cursor: pointer;
     transition: all 0.2s ease;
+    user-select: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chip:hover {
+    border-color: var(--bright-yellow);
+    color: var(--pure-white);
 }
 
 .chip.on {
-    background: var(--jet-black);
-    color: var(--bright-yellow);
-    border-color: var(--jet-black);
+    background: var(--bright-yellow);
+    color: var(--jet-black);
+    border-color: var(--bright-yellow);
+    font-weight: 700;
+    box-shadow: 0 0 10px rgba(255, 204, 0, 0.25);
 }
 
 .chip.ok {
-    background: #e4f6e6;
-    border-color: #9bd3a1;
+    background: rgba(37, 211, 102, 0.15);
+    color: #25d366;
+    border-color: #25d366;
+}
+
+.chip.ok:hover {
+    background: #25d366;
+    color: #000;
 }
 
 .chip.no {
-    background: #fde8e8;
-    border-color: #e3a2a2;
+    background: rgba(230, 57, 70, 0.15);
+    color: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+.chip.no:hover {
+    background: var(--vibrant-red);
+    color: #fff;
 }
 
 .tools {
