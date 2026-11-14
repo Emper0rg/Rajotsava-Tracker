@@ -22,6 +22,10 @@
 <a href="{{ url_for('admin') }}" class="{{ 'on' if e=='admin' }}">CR Admin</a></nav>
 <main>{% for c, m in get_flashed_messages(with_categories=true) %}<p class="flash {{ c }}">{{ m }}</p>{% endfor %}
 {% block body %}{% endblock %}</main>
-<footer><p class="kn">ಸಿರಿಗನ್ನಡಂ ಗೆಲ್ಗೆ, ಸಿರಿಗನ್ನಡಂ ಬಾಳ್ಗೆ</p><p>Built with pride for our class celebration.</p><p style="margin-top: 8px; font-weight: 600; opacity: 0.8;">Built by Guru</p></footer>
+<footer>
+    <p class="kn">ಸಿರಿಗನ್ನಡಂ ಗೆಲ್ಗೆ, ಸಿರಿಗನ್ನಡಂ ಬಾಳ್ಗೆ</p>
+    <p>Built with pride for our class celebration.</p>
+    <p style="margin-top: 8px; font-weight: 600; opacity: 0.85;">Built by Guru Vishnu &nbsp;·&nbsp; Deployed by K Chandrashekar</p>
+</footer>
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body></html>

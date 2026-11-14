@@ -15,13 +15,18 @@
 <section class="stats">
     <div class="box"><span>Total Collected</span><strong>₹{{ s.total }}</strong></div>
     <div class="box"><span>Active Contributors</span><strong>{{ s.contributors }} / {{ s.students }}</strong></div>
-    <div class="box"><span>UPI vs Cash</span><strong>₹{{ s.upi }} / ₹{{ s.cash }}</strong></div>
+    <div class="box"><span>UPI vs Cash</span><strong>₹{{ s.cash }} <span style="font-size: 0.78rem; color: #888; font-weight: normal;">(UPI)</span> &nbsp;/&nbsp; ₹{{ s.upi }} <span style="font-size: 0.78rem; color: #888; font-weight: normal;">(Cash)</span></strong></div>
 </section>
 
-<!-- Start Button -->
-<div class="row" style="justify-content: center; margin: 24px 0;" id="contribute-start-wrapper">
-    <button type="button" class="btn" style="width: auto; padding: 15px 45px; font-size: 1.25rem; box-shadow: 0 4px 15px rgba(255, 204, 0, 0.3);" id="btn-start-contribute">
-        Contribute Now 🚀
+<!-- Payment Section Header & Attractive CTA Button -->
+<div style="text-align: center; margin-top: 32px; margin-bottom: 8px;">
+    <span style="display: inline-block; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.16em; color: var(--bright-yellow); background: rgba(255, 204, 0, 0.12); padding: 5px 18px; border-radius: 99px; border: 1px solid rgba(255, 204, 0, 0.35);">
+        Payment
+    </span>
+</div>
+<div class="row" style="justify-content: center; margin: 12px 0 28px;" id="contribute-start-wrapper">
+    <button type="button" class="btn-contribute-cta" id="btn-start-contribute">
+        <span>Contribute Now</span> <span>🚀</span>
     </button>
 </div>
 
@@ -161,11 +166,11 @@
         <!-- 1. Solo vs Group Option -->
         <label style="margin-top: 0;">1. Performance Category</label>
         <div style="display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap;">
-            <label class="chip on" id="pill-solo" style="cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 10px 20px;">
+            <label class="chip category-toggle on" id="pill-solo">
                 <input type="radio" name="perf_type" value="solo" checked style="display: none;">
                 <span>👤 Solo Performance</span>
             </label>
-            <label class="chip" id="pill-group" style="cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 10px 20px;">
+            <label class="chip category-toggle" id="pill-group">
                 <input type="radio" name="perf_type" value="group" style="display: none;">
                 <span>👥 Group Performance (2+ Students)</span>
             </label>
